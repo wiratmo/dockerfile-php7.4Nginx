@@ -1,0 +1,43 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: ceklab_app
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - ci3_net
+
+  db:
+    image: mysql:8.0
+    container_name: ceklab_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: ceklab
+      MYSQL_USER: ceklab_user
+      MYSQL_PASSWORD: ceklab_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ci3_net
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: ceklab_nginx_proxy
+    ports:
+      - "9002:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./src:/var/www/html
+    depends_on:
+      - app
+    networks:
+      - ci3_net
+
+networks:
+  ci3_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
